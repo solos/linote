@@ -1,0 +1,5 @@
+# linote changelog
+
+## 2014-02-24
+
+* First public version.
