@@ -6,6 +6,7 @@ import utils
 import local
 import config
 import encoding
+import cPickle as pickle
 import evernote.edam.error.ttypes as Errors
 import thrift.transport.THttpClient as THttpClient
 import evernote.edam.notestore.NoteStore as NoteStore
@@ -80,10 +81,9 @@ class Linote(object):
         _updated = note.updated / 1000
         try:
             local_updated = self.local_files[_id]['mtime']
-            if _updated < local_updated:
-                return
-        except Exception, e:
-            print e
+        except KeyError:
+            local_updated = 0
+        if _updated < local_updated:
             return
         print note.guid, note.title
         ntitle = note.title.replace('/', '-')
@@ -138,6 +138,30 @@ class Linote(object):
         '''todo: delete'''
         pass
 
+    def search_filename(self, keywords):
+        keywords = keywords.strip().lower().split(' ')
+        lndir = '%s/.linote' % os.environ['HOME']
+        cachefile = '%s/.caches' % lndir
+        try:
+            files = pickle.loads(open(cachefile).read())
+        except Exception:
+            files = local.gen_filelist()
+
+        for _id in files:
+            fullname = files[_id]['file']
+            filename = os.path.basename(fullname).lower()[37:]
+            is_related = True
+            for keyword in keywords:
+                if keyword not in filename.lower():
+                    is_related = False
+                    break
+            if is_related:
+                print _id, fullname
+
+    def search_content(self, keywords):
+        pass
+
 if __name__ == '__main__':
     ln = Linote(config.dev_token, config.noteStoreUrl)
     ln.sync()
+    ln.search_filename('pylons authkit')
