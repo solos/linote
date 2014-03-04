@@ -3,12 +3,21 @@
 
 import os
 import stat
+import cPickle as pickle
 
 local_files = {}
 
 
 def gen_filelist():
     walktree('notes', statfile)
+    files = pickle.dumps(local_files)
+    lndir = '%s/.linote' % os.environ['HOME']
+    cachefile = '%s/.caches' % lndir
+    try:
+        open(cachefile, 'w').write(files)
+    except:
+        os.path.mkdir(lndir)
+        open(cachefile, 'w').write(files)
     return local_files
 
 
@@ -50,4 +59,5 @@ def statfile(file):
 
 if __name__ == '__main__':
     filelist = gen_filelist()
-    print filelist
+    for i in filelist:
+        print filelist[i]['file']
