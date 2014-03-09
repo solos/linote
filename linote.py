@@ -10,6 +10,7 @@ import cPickle as pickle
 import evernote.edam.error.ttypes as Errors
 import thrift.transport.THttpClient as THttpClient
 import evernote.edam.notestore.NoteStore as NoteStore
+import evernote.edam.type.ttypes as Types
 from thrift.protocol.TBinaryProtocol import TBinaryProtocol
 
 __version__ = '0.0.1'
@@ -130,9 +131,21 @@ class Linote(object):
             else:
                 return True
 
-    def create(self):
-        '''todo: create'''
-        pass
+    def make_note(self, note_title, note_content, notebookGuid=None):
+        '''make note'''
+        note = Types.Note()
+        note.title = note_title
+        note.content = (
+            '<?xml version="1.0" encoding="UTF-8"?>'
+            '<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">'
+            '<en-note> %s </en-note>' % note_content)
+        if notebookGuid:
+            note.notebookGuid = notebookGuid
+        return note
+
+    def create(self, note):
+        '''create note'''
+        return self.noteStore.createNote(self.dev_token, note)
 
     def delete(self):
         '''todo: delete'''
@@ -147,6 +160,7 @@ class Linote(object):
         except Exception:
             files = local.gen_filelist()
 
+        related = []
         for _id in files:
             fullname = files[_id]['file']
             filename = os.path.basename(fullname).lower()[37:]
@@ -157,6 +171,8 @@ class Linote(object):
                     break
             if is_related:
                 print _id, fullname
+                related.append((_id, fullname))
+        return related
 
     def search_content(self, keywords):
         pass
@@ -164,4 +180,8 @@ class Linote(object):
 if __name__ == '__main__':
     ln = Linote(config.dev_token, config.noteStoreUrl)
     ln.sync()
-    ln.search_filename('pylons authkit')
+    related = ln.search_filename('pylons authkit')
+    note_title = 'test'
+    note_content = 'content test'
+    note = ln.make_note(note_title, note_content)
+    ln.create(note)
