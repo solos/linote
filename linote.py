@@ -74,6 +74,9 @@ class Linote(object):
         _, content = encoding.html_to_unicode('', note.content)
         content = utils.encoding_match.sub('', content)
         content = content.replace('<br>', '\n').replace('</br>', '\n')
+        return content
+
+    def clean(self, content):
         content = utils.clean_note(content)
         return content.encode('utf8')
 
@@ -100,7 +103,7 @@ class Linote(object):
             filename = ('%s/%s-%s.enml' % (subdir, note.guid, title))
             note_item = self.getContent(note.guid)
             #extract html and update note
-            content = self.format(note_item)
+            content = self.clean(self.format(note_item))
             open(filename, 'w').write(content)
 
     def sync(self):
@@ -150,6 +153,10 @@ class Linote(object):
     def delete(self):
         '''todo: delete'''
         pass
+
+    def extract(self, note):
+        content = note.content
+        return content
 
     def search_filename(self, keywords):
         keywords = keywords.strip().lower().split(' ')
