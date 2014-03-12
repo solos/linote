@@ -33,6 +33,10 @@ cleaner = lxml.html.clean.Cleaner(
     whitelist_tags=set(['embed', 'iframe']),
     _tag_link_attrs={'a': 'href', 'applet': ['code', 'object']})
 
+style_cleaner = lxml.html.clean.Cleaner(
+    safe_attrs_only=True,
+    safe_attrs=set(['href', 'src', 'style', 'title', 'alt']))
+
 
 def clean_note(content):
     cleaned = cleaner.clean_html(content)
@@ -40,18 +44,23 @@ def clean_note(content):
     return raw_text
 
 
+def clean_style(content):
+    cleaned = style_cleaner.clean_html(content)
+    return cleaned
+
+
 def make_mdnote(md_source):
-    source_segment = '''<div id="md_source" style="display:none">%s</div>''' \
-                     % md_source
+    source_segment = '''<div style="display:none">%s</div>''' % md_source
     html = markdown.markdown(md_source)
-    return '%s\n%s' % (html, source_segment)
+    note = '%s\n%s' % (html, source_segment)
+    return clean_style(note)
 
 
 def make_rstnote(rst_source):
-    source_segment = '''<div id="rst_source" style="display:none">%s</div>''' \
-                     % rst_source
+    source_segment = '''<div style="display:none">%s</div>''' % rst_source
     html = publish_parts(rst_source, writer_name='html')['html_body']
-    return '%s\n%s' % (html, source_segment)
+    note = '%s\n%s' % (html, source_segment)
+    return clean_style(note)
 
 
 if __name__ == '__main__':
