@@ -7,6 +7,7 @@ import local
 import config
 import encoding
 import cPickle as pickle
+import lxml.html
 import evernote.edam.error.ttypes as Errors
 import thrift.transport.THttpClient as THttpClient
 import evernote.edam.notestore.NoteStore as NoteStore
@@ -73,10 +74,10 @@ class Linote(object):
     def format(self, note):
         _, content = encoding.html_to_unicode('', note.content)
         content = utils.encoding_match.sub('', content)
-        content = content.replace('<br>', '\n').replace('</br>', '\n')
         return content
 
     def clean(self, content):
+        content = content.replace('<br>', '\n').replace('</br>', '\n')
         content = utils.clean_note(content)
         return content.encode('utf8')
 
@@ -123,7 +124,6 @@ class Linote(object):
         try:
             print 'check'
             print self.noteStore.getSyncState(self.dev_token)
-            print 'hello'
             return True
         except Errors.EDAMSystemException, e:
             print e
@@ -155,8 +155,15 @@ class Linote(object):
         pass
 
     def extract(self, note):
-        content = note.content
-        return content
+        content = self.format(note)
+        tree = lxml.html.fromstring(content)
+        source = ''
+        try:
+            code_element = tree.xpath('//div[@style="display:none"]')[0]
+            source = lxml.html.tostring(code_element)
+        except Exception, e:
+            print e
+        return source
 
     def search_filename(self, keywords):
         keywords = keywords.strip().lower().split(' ')
