@@ -97,13 +97,12 @@ class Linote(object):
         if title.endswith('.md') or title.endswith('.rst'):
             suffix = title.split('.')[-1]
             filename = ('%s/%s-%s.%s' % (subdir, note.guid, title, suffix))
-            #todo: extract source code and write file
-            content = self.getContent(note.guid)
+            note_item = self.getContent(note.guid)
+            content = self.extract(note_item)
             open(filename, 'w').write(content)
         else:
             filename = ('%s/%s-%s.enml' % (subdir, note.guid, title))
             note_item = self.getContent(note.guid)
-            #extract html and update note
             content = self.clean(self.format(note_item))
             open(filename, 'w').write(content)
 
