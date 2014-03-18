@@ -188,12 +188,35 @@ class Linote(object):
         return related
 
     def search_content(self, keywords):
-        pass
+        keywords = keywords.strip().lower().split(' ')
+        lndir = '%s/.linote' % os.environ['HOME']
+        cachefile = '%s/.caches' % lndir
+        try:
+            files = pickle.loads(open(cachefile).read())
+        except Exception:
+            files = local.gen_filelist()
+
+        related = []
+        for _id in files:
+            fullname = files[_id]['file']
+            filename = os.path.basename(fullname).lower()[37:]
+            content = open(fullname, 'r').read()
+            is_related = True
+            for keyword in keywords:
+                if keyword not in content:
+                    is_related = False
+                    break
+            if is_related:
+                print _id, fullname
+                related.append((_id, fullname))
+        return related
+
 
 if __name__ == '__main__':
     ln = Linote(config.dev_token, config.noteStoreUrl)
     ln.sync()
     related = ln.search_filename('pylons authkit')
+    related = ln.search_content('pylons authkit')
     note_title = 'test'
     note_content = 'content test'
     note = ln.make_note(note_title, note_content)
