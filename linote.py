@@ -233,7 +233,10 @@ class Linote(object):
         for _id in files:
             fullname = files[_id]['file']
             #filename = os.path.basename(fullname).lower()[37:]
-            content = open(fullname, 'r').read()
+            try:
+                content = open(fullname, 'r').read()
+            except:
+                continue
             is_related = True
             for keyword in keywords:
                 if keyword not in content:
