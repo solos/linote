@@ -2,12 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import os
-import utils
+import re
 import local
 import config
 import encoding
 import cPickle as pickle
+import markdown
 import lxml.html
+import lxml.html.clean
+from docutils.core import publish_parts
 import evernote.edam.error.ttypes as Errors
 import thrift.transport.THttpClient as THttpClient
 import evernote.edam.notestore.NoteStore as NoteStore
@@ -15,6 +18,8 @@ import evernote.edam.type.ttypes as Types
 from thrift.protocol.TBinaryProtocol import TBinaryProtocol
 
 __version__ = '0.0.1'
+
+encoding_match = re.compile('encoding=[^>]+')
 
 
 class Linote(object):
@@ -25,6 +30,34 @@ class Linote(object):
         noteStoreHttpClient = THttpClient.THttpClient(self.noteStoreUrl)
         noteStoreProtocol = TBinaryProtocol(noteStoreHttpClient)
         self.noteStore = NoteStore.Client(noteStoreProtocol)
+        self.style_cleaner = lxml.html.clean.Cleaner(
+            safe_attrs_only=True,
+            safe_attrs=set(['href', 'src', 'style', 'title', 'alt']))
+
+        self.cleaner = lxml.html.clean.Cleaner(
+            scripts=True,
+            javascript=True,
+            comments=True,
+            style=True,
+            links=True,
+            meta=True,
+            page_structure=True,
+            processing_instructions=True,
+            embedded=True,
+            frames=True,
+            forms=True,
+            annoying_tags=True,
+            remove_tags=None,
+            allow_tags=None,
+            kill_tags=None,
+            remove_unknown_tags=True,
+            safe_attrs_only=True,
+            safe_attrs=frozenset(['abbr', 'accept', 'accept-charset']),
+            add_nofollow=False,
+            host_whitelist=(),
+            whitelist_tags=set(['embed', 'iframe']),
+            _tag_link_attrs={'a': 'href', 'applet': ['code', 'object']}
+        )
 
     def getNotebooks(self):
         return self.noteStore.listNotebooks(self.dev_token)
@@ -73,12 +106,12 @@ class Linote(object):
 
     def format(self, note):
         _, content = encoding.html_to_unicode('', note.content)
-        content = utils.encoding_match.sub('', content)
+        content = encoding_match.sub('', content)
         return content
 
     def clean(self, content):
         content = content.replace('<br>', '\n').replace('</br>', '\n')
-        content = utils.clean_note(content)
+        content = self.clean_note(content)
         return content.encode('utf8')
 
     def process(self, note, subdir):
@@ -199,7 +232,7 @@ class Linote(object):
         related = []
         for _id in files:
             fullname = files[_id]['file']
-            filename = os.path.basename(fullname).lower()[37:]
+            #filename = os.path.basename(fullname).lower()[37:]
             content = open(fullname, 'r').read()
             is_related = True
             for keyword in keywords:
@@ -211,10 +244,30 @@ class Linote(object):
                 related.append((_id, fullname))
         return related
 
+    def clean_note(self, content):
+        cleaned = self.cleaner.clean_html(content)
+        raw_text = lxml.html.fromstring(cleaned).text_content()
+        return raw_text
+
+    def clean_style(self, content):
+        cleaned = self.style_cleaner.clean_html(content)
+        return cleaned
+
+    def make_mdnote(self, md_source):
+        source_segment = '''<div style="display:none">%s</div>''' % md_source
+        html = markdown.markdown(md_source)
+        note = '%s\n%s' % (html, source_segment)
+        return self.clean_style(note)
+
+    def make_rstnote(self, rst_source):
+        source_segment = '''<div style="display:none">%s</div>''' % rst_source
+        html = publish_parts(rst_source, writer_name='html')['html_body']
+        note = '%s\n%s' % (html, source_segment)
+        return self.clean_style(note)
 
 if __name__ == '__main__':
     ln = Linote(config.dev_token, config.noteStoreUrl)
-    ln.sync()
+    #ln.sync()
     related = ln.search_filename('pylons authkit')
     related = ln.search_content('pylons authkit')
     note_title = 'test'
