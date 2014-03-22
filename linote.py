@@ -22,6 +22,19 @@ __version__ = '0.0.1'
 encoding_match = re.compile('encoding=[^>]+')
 
 
+def check_rate_limit(func):
+    def wrapper(self, *args, **kwargs):
+        try:
+            self.noteStore.getSyncState(self.dev_token)
+            return func(self, *args, **kwargs)
+        except Errors.EDAMSystemException, e:
+            if e.errorCode == Errors.EDAMErrorCode.RATE_LIMIT_REACHED:
+                print ("Rate limit reached, Retry your request in %d "
+                       "seconds" % e.rateLimitDuration)
+            return None
+    return wrapper
+
+
 class Linote(object):
 
     def __init__(self, dev_token, note_store_url):
@@ -59,9 +72,11 @@ class Linote(object):
             _tag_link_attrs={'a': 'href', 'applet': ['code', 'object']}
         )
 
+    @check_rate_limit
     def getNotebooks(self):
         return self.noteStore.listNotebooks(self.dev_token)
 
+    @check_rate_limit
     def getNotebookDir(self, notebook):
         if notebook.stack:
             parent_dir = notebook.stack
@@ -76,12 +91,14 @@ class Linote(object):
                 os.makedirs(subdir)
         return subdir
 
+    @check_rate_limit
     def getNotes(self, notebook, limit=256):
         filter = NoteStore.NoteFilter()
         filter.notebookGuid = notebook.guid
         noteList = self.noteStore.findNotes(self.dev_token, filter, 0, limit)
         return noteList.notes
 
+    @check_rate_limit
     def getContent(self, noteId):
         return self.noteStore.getNote(self.dev_token,
                                       noteId, True, False, False, False)
@@ -114,8 +131,10 @@ class Linote(object):
         content = self.clean_note(content)
         return content.encode('utf8')
 
+    @check_rate_limit
     def process(self, note, subdir):
         _id = note.guid
+        print _id
         _updated = note.updated / 1000
         try:
             local_updated = self.local_files[_id]['mtime']
@@ -142,6 +161,8 @@ class Linote(object):
     def sync(self):
         self.local_files = local.gen_filelist()
         notebooks = self.getNotebooks()
+        if not notebooks:
+            return
         if not self.checkdir():
             print 'notedir not exist and failed to mkdir'
             return
@@ -149,22 +170,10 @@ class Linote(object):
         for notebook in notebooks:
             subdir = self.getNotebookDir(notebook)
             notes = self.getNotes(notebook)
+            if not notes:
+                return
             for note in notes:
                 self.process(note, subdir)
-
-    def check(self):
-        try:
-            print 'check'
-            print self.noteStore.getSyncState(self.dev_token)
-            return True
-        except Errors.EDAMSystemException, e:
-            print e
-            if e.errorCode == Errors.EDAMErrorCode.RATE_LIMIT_REACHED:
-                print "Rate limit reached, Retry your request in %d seconds" \
-                    % e.rateLimitDuration
-                return False
-            else:
-                return True
 
     def make_note(self, note_title, note_content, notebookGuid=None):
         '''make note'''
@@ -270,7 +279,7 @@ class Linote(object):
 
 if __name__ == '__main__':
     ln = Linote(config.dev_token, config.noteStoreUrl)
-    #ln.sync()
+    ln.sync()
     related = ln.search_filename('pylons authkit')
     related = ln.search_content('pylons authkit')
     note_title = 'test'
