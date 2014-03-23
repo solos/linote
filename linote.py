@@ -10,6 +10,7 @@ import cPickle as pickle
 import markdown
 import lxml.html
 import lxml.html.clean
+from logger import logger
 from docutils.core import publish_parts
 import evernote.edam.error.ttypes as Errors
 import thrift.transport.THttpClient as THttpClient
@@ -29,9 +30,11 @@ def check_rate_limit(func):
             return func(self, *args, **kwargs)
         except Errors.EDAMSystemException, e:
             if e.errorCode == Errors.EDAMErrorCode.RATE_LIMIT_REACHED:
-                print ("Rate limit reached, Retry your request in %d "
-                       "seconds" % e.rateLimitDuration)
+                logger.info("Rate limit reached, Retry your request in %d "
+                            "seconds" % e.rateLimitDuration)
             return None
+        except Exception, e:
+            logger.error(e)
     return wrapper
 
 
@@ -111,7 +114,7 @@ class Linote(object):
                 os.mkdir(notedir)
                 return True
             except Exception, e:
-                print e
+                logger.error(e)
                 return False
         return True
 
@@ -119,12 +122,21 @@ class Linote(object):
         try:
             os.chdir(notedir)
         except Exception, e:
-            print e
+            logger.error(e)
 
     def format(self, note):
         _, content = encoding.html_to_unicode('', note.content)
         content = encoding_match.sub('', content)
         return content
+
+    def clean_note(self, content):
+        cleaned = self.cleaner.clean_html(content)
+        raw_text = lxml.html.fromstring(cleaned).text_content()
+        return raw_text
+
+    def clean_style(self, content):
+        cleaned = self.style_cleaner.clean_html(content)
+        return cleaned
 
     def clean(self, content):
         content = content.replace('<br>', '\n').replace('</br>', '\n')
@@ -134,15 +146,15 @@ class Linote(object):
     @check_rate_limit
     def process(self, note, subdir):
         _id = note.guid
-        print _id
         _updated = note.updated / 1000
+        logger.info('processing %s' % _id)
         try:
             local_updated = self.local_files[_id]['mtime']
         except KeyError:
             local_updated = 0
-        if _updated < local_updated:
+        if _updated <= local_updated:
+            logger.info('note %s no need to sync' % _id)
             return
-        print note.guid, note.title
         ntitle = note.title.replace('/', '-')
         title = ntitle if len(ntitle) < 200 else ntitle[:200]
 
@@ -164,7 +176,7 @@ class Linote(object):
         if not notebooks:
             return
         if not self.checkdir():
-            print 'notedir not exist and failed to mkdir'
+            logger.error('notedir not exist and failed to mkdir')
             return
         self.chdir(config.notedir)
         for notebook in notebooks:
@@ -174,6 +186,18 @@ class Linote(object):
                 return
             for note in notes:
                 self.process(note, subdir)
+
+    def make_mdnote(self, md_source):
+        source_segment = '''<div style="display:none">%s</div>''' % md_source
+        html = markdown.markdown(md_source)
+        note = '%s\n%s' % (html, source_segment)
+        return self.clean_style(note)
+
+    def make_rstnote(self, rst_source):
+        source_segment = '''<div style="display:none">%s</div>''' % rst_source
+        html = publish_parts(rst_source, writer_name='html')['html_body']
+        note = '%s\n%s' % (html, source_segment)
+        return self.clean_style(note)
 
     def make_note(self, note_title, note_content, notebookGuid=None):
         '''make note'''
@@ -203,7 +227,7 @@ class Linote(object):
             code_element = tree.xpath('//div[@style="display:none"]')[0]
             source = lxml.html.tostring(code_element)
         except Exception, e:
-            print e
+            logger.error(e)
         return source
 
     def search_filename(self, keywords):
@@ -255,27 +279,6 @@ class Linote(object):
                 print _id, fullname
                 related.append((_id, fullname))
         return related
-
-    def clean_note(self, content):
-        cleaned = self.cleaner.clean_html(content)
-        raw_text = lxml.html.fromstring(cleaned).text_content()
-        return raw_text
-
-    def clean_style(self, content):
-        cleaned = self.style_cleaner.clean_html(content)
-        return cleaned
-
-    def make_mdnote(self, md_source):
-        source_segment = '''<div style="display:none">%s</div>''' % md_source
-        html = markdown.markdown(md_source)
-        note = '%s\n%s' % (html, source_segment)
-        return self.clean_style(note)
-
-    def make_rstnote(self, rst_source):
-        source_segment = '''<div style="display:none">%s</div>''' % rst_source
-        html = publish_parts(rst_source, writer_name='html')['html_body']
-        note = '%s\n%s' % (html, source_segment)
-        return self.clean_style(note)
 
 if __name__ == '__main__':
     ln = Linote(config.dev_token, config.noteStoreUrl)
