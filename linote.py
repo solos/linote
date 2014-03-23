@@ -10,6 +10,7 @@ import cPickle as pickle
 import markdown
 import lxml.html
 import lxml.html.clean
+from logger import logger
 from docutils.core import publish_parts
 import evernote.edam.error.ttypes as Errors
 import thrift.transport.THttpClient as THttpClient
@@ -29,9 +30,11 @@ def check_rate_limit(func):
             return func(self, *args, **kwargs)
         except Errors.EDAMSystemException, e:
             if e.errorCode == Errors.EDAMErrorCode.RATE_LIMIT_REACHED:
-                print ("Rate limit reached, Retry your request in %d "
-                       "seconds" % e.rateLimitDuration)
+                logger.info("Rate limit reached, Retry your request in %d "
+                            "seconds" % e.rateLimitDuration)
             return None
+        except Exception, e:
+            logger.error(e)
     return wrapper
 
 
@@ -111,7 +114,7 @@ class Linote(object):
                 os.mkdir(notedir)
                 return True
             except Exception, e:
-                print e
+                logger.error(e)
                 return False
         return True
 
@@ -119,7 +122,7 @@ class Linote(object):
         try:
             os.chdir(notedir)
         except Exception, e:
-            print e
+            logger.error(e)
 
     def format(self, note):
         _, content = encoding.html_to_unicode('', note.content)
@@ -144,11 +147,13 @@ class Linote(object):
     def process(self, note, subdir):
         _id = note.guid
         _updated = note.updated / 1000
+        logger.info('processing %s' % _id)
         try:
             local_updated = self.local_files[_id]['mtime']
         except KeyError:
             local_updated = 0
-        if _updated < local_updated:
+        if _updated <= local_updated:
+            logger.info('note %s no need to sync' % _id)
             return
         ntitle = note.title.replace('/', '-')
         title = ntitle if len(ntitle) < 200 else ntitle[:200]
@@ -171,7 +176,7 @@ class Linote(object):
         if not notebooks:
             return
         if not self.checkdir():
-            print 'notedir not exist and failed to mkdir'
+            logger.error('notedir not exist and failed to mkdir')
             return
         self.chdir(config.notedir)
         for notebook in notebooks:
@@ -222,7 +227,7 @@ class Linote(object):
             code_element = tree.xpath('//div[@style="display:none"]')[0]
             source = lxml.html.tostring(code_element)
         except Exception, e:
-            print e
+            logger.error(e)
         return source
 
     def search_filename(self, keywords):
