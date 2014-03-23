@@ -126,6 +126,15 @@ class Linote(object):
         content = encoding_match.sub('', content)
         return content
 
+    def clean_note(self, content):
+        cleaned = self.cleaner.clean_html(content)
+        raw_text = lxml.html.fromstring(cleaned).text_content()
+        return raw_text
+
+    def clean_style(self, content):
+        cleaned = self.style_cleaner.clean_html(content)
+        return cleaned
+
     def clean(self, content):
         content = content.replace('<br>', '\n').replace('</br>', '\n')
         content = self.clean_note(content)
@@ -134,7 +143,6 @@ class Linote(object):
     @check_rate_limit
     def process(self, note, subdir):
         _id = note.guid
-        print _id
         _updated = note.updated / 1000
         try:
             local_updated = self.local_files[_id]['mtime']
@@ -142,7 +150,6 @@ class Linote(object):
             local_updated = 0
         if _updated < local_updated:
             return
-        print note.guid, note.title
         ntitle = note.title.replace('/', '-')
         title = ntitle if len(ntitle) < 200 else ntitle[:200]
 
@@ -174,6 +181,18 @@ class Linote(object):
                 return
             for note in notes:
                 self.process(note, subdir)
+
+    def make_mdnote(self, md_source):
+        source_segment = '''<div style="display:none">%s</div>''' % md_source
+        html = markdown.markdown(md_source)
+        note = '%s\n%s' % (html, source_segment)
+        return self.clean_style(note)
+
+    def make_rstnote(self, rst_source):
+        source_segment = '''<div style="display:none">%s</div>''' % rst_source
+        html = publish_parts(rst_source, writer_name='html')['html_body']
+        note = '%s\n%s' % (html, source_segment)
+        return self.clean_style(note)
 
     def make_note(self, note_title, note_content, notebookGuid=None):
         '''make note'''
@@ -255,27 +274,6 @@ class Linote(object):
                 print _id, fullname
                 related.append((_id, fullname))
         return related
-
-    def clean_note(self, content):
-        cleaned = self.cleaner.clean_html(content)
-        raw_text = lxml.html.fromstring(cleaned).text_content()
-        return raw_text
-
-    def clean_style(self, content):
-        cleaned = self.style_cleaner.clean_html(content)
-        return cleaned
-
-    def make_mdnote(self, md_source):
-        source_segment = '''<div style="display:none">%s</div>''' % md_source
-        html = markdown.markdown(md_source)
-        note = '%s\n%s' % (html, source_segment)
-        return self.clean_style(note)
-
-    def make_rstnote(self, rst_source):
-        source_segment = '''<div style="display:none">%s</div>''' % rst_source
-        html = publish_parts(rst_source, writer_name='html')['html_body']
-        note = '%s\n%s' % (html, source_segment)
-        return self.clean_style(note)
 
 if __name__ == '__main__':
     ln = Linote(config.dev_token, config.noteStoreUrl)
