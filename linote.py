@@ -95,7 +95,7 @@ class Linote(object):
         return subdir
 
     @check_rate_limit
-    def getNotes(self, notebook, limit=256):
+    def getNotes(self, notebook, limit=512):
         filter = NoteStore.NoteFilter()
         filter.notebookGuid = notebook.guid
         noteList = self.noteStore.findNotes(self.dev_token, filter, 0, limit)
@@ -147,14 +147,13 @@ class Linote(object):
     def process(self, note, subdir):
         _id = note.guid
         _updated = note.updated / 1000
-        logger.info('processing %s' % _id)
         try:
             local_updated = self.local_files[_id]['mtime']
         except KeyError:
             local_updated = 0
         if _updated <= local_updated:
-            logger.info('note %s no need to sync' % _id)
             return
+        logger.info('sync %s %s' % (_id, note.title))
         ntitle = note.title.replace('/', '-')
         title = ntitle if len(ntitle) < 200 else ntitle[:200]
 
