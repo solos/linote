@@ -1,0 +1,3 @@
+include linote/config/deployment.ini_tmpl
+recursive-include linote/public *
+recursive-include linote/templates *
