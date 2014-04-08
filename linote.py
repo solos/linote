@@ -2,6 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
+
+PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+sys.path.append(PROJECT_ROOT)
+
 import re
 import local
 import config
@@ -13,9 +18,9 @@ import lxml.html.clean
 from logger import logger
 from docutils.core import publish_parts
 import evernote.edam.error.ttypes as Errors
-import thrift.transport.THttpClient as THttpClient
 import evernote.edam.notestore.NoteStore as NoteStore
 import evernote.edam.type.ttypes as Types
+import thrift.transport.THttpClient as THttpClient
 from thrift.protocol.TBinaryProtocol import TBinaryProtocol
 
 __version__ = '0.0.1'
@@ -82,8 +87,10 @@ class Linote(object):
     @check_rate_limit
     def getNotebookDir(self, notebook):
         if notebook.stack:
-            parent_dir = notebook.stack
-            subdir = '%s/%s' % (parent_dir, notebook.name)
+            #parent_dir = notebook.stack
+            parent_dir = os.path.join(PROJECT_ROOT, notebook.stack)
+            #subdir = '%s/%s' % (parent_dir, notebook.name)
+            subdir = os.path.join(PROJECT_ROOT, parent_dir, notebook.name)
             if not os.path.isdir(parent_dir):
                 os.mkdir(parent_dir)
             if not os.path.isdir(subdir):
@@ -125,8 +132,10 @@ class Linote(object):
             logger.error(e)
 
     def format(self, note):
-        _, content = encoding.html_to_unicode('', note.content)
-        content = encoding_match.sub('', content)
+        content = ''
+        if note is None:
+            _, content = encoding.html_to_unicode('', note.content)
+            content = encoding_match.sub('', content)
         return content
 
     def clean_note(self, content):
