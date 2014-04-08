@@ -125,8 +125,10 @@ class Linote(object):
             logger.error(e)
 
     def format(self, note):
-        _, content = encoding.html_to_unicode('', note.content)
-        content = encoding_match.sub('', content)
+        content = ''
+        if note is None:
+            _, content = encoding.html_to_unicode('', note.content)
+            content = encoding_match.sub('', content)
         return content
 
     def clean_note(self, content):
