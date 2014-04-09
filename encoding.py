@@ -1,9 +1,12 @@
 """
 Functions for handling encoding of web pages
 """
-import re, codecs, encodings
+import re
+import codecs
+import encodings
 
 _HEADER_ENCODING_RE = re.compile(r'charset=([\w-]+)', re.I)
+
 
 def http_content_type_encoding(content_type):
     """Extract the encoding in the content-type header"""
@@ -21,9 +24,10 @@ _XML_ENCODING_RE = _TEMPLATE % ('encoding', r'(?P<xmlcharset>[\w-]+)')
 
 # check for meta tags, or xml decl. and stop search if a body tag is encountered
 _BODY_ENCODING_PATTERN = r'<\s*(?:meta(?:(?:\s+%s|\s+%s){2}|\s+%s)|\?xml\s[^>]+%s|body)' % \
-                        (_HTTPEQUIV_RE, _CONTENT_RE, _CONTENT2_RE, _XML_ENCODING_RE)
+                         (_HTTPEQUIV_RE, _CONTENT_RE, _CONTENT2_RE, _XML_ENCODING_RE)
 _BODY_ENCODING_STR_RE = re.compile(_BODY_ENCODING_PATTERN, re.I)
 _BODY_ENCODING_BYTES_RE = re.compile(_BODY_ENCODING_PATTERN.encode('ascii'), re.I)
+
 
 def html_body_declared_encoding(html_body_str):
     """encoding specified in meta tags in the html body, or None if no
@@ -37,8 +41,8 @@ def html_body_declared_encoding(html_body_str):
         match = _BODY_ENCODING_STR_RE.search(chunk)
 
     if match:
-        encoding = match.group('charset') or match.group('charset2') \
-                or match.group('xmlcharset')
+        encoding = (match.group('charset') or match.group('charset2')
+                    or match.group('xmlcharset'))
         if encoding:
             return resolve_encoding(encoding)
 
@@ -68,6 +72,7 @@ DEFAULT_ENCODING_TRANSLATION = {
     'zh_cn': 'gb18030'
 }
 
+
 def _c18n_encoding(encoding):
     """Cannonicalize an encoding name
 
@@ -76,6 +81,7 @@ def _c18n_encoding(encoding):
     """
     normed = encodings.normalize_encoding(encoding).lower()
     return encodings.aliases.aliases.get(normed, normed)
+
 
 def resolve_encoding(encoding_alias):
     """Return the encoding the given encoding alias maps to, or None if the
@@ -97,6 +103,7 @@ _BOM_TABLE = [
 ]
 _FIRST_CHARS = set(c[0] for (c, _) in _BOM_TABLE)
 
+
 def read_bom(data):
     """Read the byte order mark in the text, if present, and
     return the encoding represented by the BOM and the BOM.
@@ -114,6 +121,7 @@ def read_bom(data):
 # bad utf-8 encoded strings. see http://bugs.python.org/issue8271
 codecs.register_error('w3lib_replace', lambda exc: (u'\ufffd', exc.start+1))
 
+
 def to_unicode(data_str, encoding):
     """Convert a str object to unicode using the encoding given
 
@@ -122,8 +130,9 @@ def to_unicode(data_str, encoding):
     """
     return data_str.decode(encoding, 'w3lib_replace')
 
+
 def html_to_unicode(content_type_header, html_body_str,
-        default_encoding='utf8', auto_detect_fun=None):
+                    default_encoding='utf8', auto_detect_fun=None):
     """Convert raw html bytes to unicode
 
     This attempts to make a reasonable guess at the content encoding of the
