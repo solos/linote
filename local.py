@@ -18,7 +18,7 @@ def gen_filelist():
     try:
         open(cachefile, 'w').write(files)
     except:
-        os.path.mkdir(lndir)
+        os.mkdir(lndir)
         open(cachefile, 'w').write(files)
     return local_files
 
