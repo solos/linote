@@ -17,8 +17,8 @@ def gen_filelist():
     cachefile = '%s/.caches' % lndir
     try:
         os.makedirs(lndir)
-    except os.error, e:
-        if e.errno != errno.EEXIST:
+    except OSError:
+        if not os.path.exists(lndir):
             raise
     open(cachefile, 'w').write(files)
     return local_files
