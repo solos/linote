@@ -15,11 +15,8 @@ def gen_filelist():
     files = pickle.dumps(local_files)
     lndir = '%s/.linote' % os.environ['HOME']
     cachefile = '%s/.caches' % lndir
-    try:
-        open(cachefile, 'w').write(files)
-    except:
-        os.makedirs(lndir)
-        open(cachefile, 'w').write(files)
+    os.makedirs(lndir)
+    open(cachefile, 'w').write(files)
     return local_files
 
 
