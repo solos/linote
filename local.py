@@ -16,10 +16,11 @@ def gen_filelist():
     lndir = '%s/.linote' % os.environ['HOME']
     cachefile = '%s/.caches' % lndir
     try:
-        open(cachefile, 'w').write(files)
-    except:
         os.makedirs(lndir)
-        open(cachefile, 'w').write(files)
+    except OSError:
+        if not os.path.exists(lndir):
+            raise
+    open(cachefile, 'w').write(files)
     return local_files
 
 
