@@ -5,7 +5,9 @@ import os
 import sys
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+PROJECT_CONFIG = os.path.join(os.environ['HOME'], '.linote')
 sys.path.append(PROJECT_ROOT)
+sys.path.append(PROJECT_CONFIG)
 
 import re
 import local
