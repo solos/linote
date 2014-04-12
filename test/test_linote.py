@@ -3,6 +3,7 @@
 
 import os
 import sys
+from linote import Linote
 from utils import clean_style, clean_note
 from encoding import (to_unicode,
                       html_to_unicode,
@@ -18,7 +19,7 @@ import unittest
 
 class DefaultTestCase(unittest.TestCase):
     def setUp(self):
-        pass
+        self.linote = Linote('test_token', 'http://abc.com')
 
     def tearDown(self):
         pass
@@ -53,6 +54,20 @@ class DefaultTestCase(unittest.TestCase):
             html_body_declared_encoding(
                 '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">'),
             'utf-8')
+
+    def test_linote_clean(self):
+        """Linote clean function"""
+        self.assertEqual(self.linote.clean("hello<br>"), u'hello\n')
+
+    def test_linote_clean_note(self):
+        """Linote clean_note function"""
+        self.assertEqual(self.linote.clean_note("<h1>hello</h1><br>"),
+                         'hello')
+    
+    def test_linote_clean_style(self):
+        """Linote clean_style function"""
+        self.assertEqual(self.linote.clean_style("<h1 type='text/css'>hello</h1>"),
+                         '<h1>hello</h1>')
 
 
 def suite():
