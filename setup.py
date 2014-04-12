@@ -14,5 +14,15 @@ setup(name='linote',
       scripts=['linote.py', 'local.py', 'encoding.py'],
       license='MIT',
       platforms=['any'],
+      classifiers=[
+        'Development Status :: 1 - Alpha',
+        'Intended Audience :: End Users/Desktop',
+        'License :: OSI Approved :: MIT License',
+        'Environment :: Console',
+        'Natural Language :: English',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Topic :: Utilities',
+      ],
       url='https://github.com/solos/linote')
 #packages=['distutils', 'distutils.command']
