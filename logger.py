@@ -9,7 +9,10 @@ from logging.handlers import TimedRotatingFileHandler
 loggerName = config.LOG_NAME
 basic_log_path = config.BASIC_LOG_PATH
 filename = config.LOG_FILENAME
-logfile = '%s/%s' % (basic_log_path, filename)
+if os.path.splitext(filename)[1] == '':
+    logfile = '%s/%s.log' % (basic_log_path, filename)
+else:
+    logfile = '%s/%s' % (basic_log_path, filename)
 if not os.path.exists(basic_log_path):
     os.makedirs(basic_log_path)
 
