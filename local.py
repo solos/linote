@@ -42,7 +42,6 @@ def walktree(dirname, callback):
 
 
 def statfile(file):
-    #filename = os.path.basename(file)
     filename = Path(file).parts[-1]
     if not filename.endswith('.enml') or filename.count('-') < 4:
         return
