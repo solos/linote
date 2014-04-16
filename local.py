@@ -4,6 +4,7 @@
 import os
 import stat
 import cPickle as pickle
+from pathlib import *
 
 local_files = {}
 
@@ -11,16 +12,16 @@ PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 
 def gen_filelist():
-    walktree(os.path.join(PROJECT_ROOT, 'notes'), statfile)
+    walktree(Path(PROJECT_ROOT).join('notes'), statfile)
     files = pickle.dumps(local_files)
     lndir = '%s/.linote' % os.environ['HOME']
     cachefile = '%s/.caches' % lndir
     try:
-        os.makedirs(lndir)
+        Path(lndir).mkdir(parents=True)
     except OSError:
-        if not os.path.exists(lndir):
+        if not Path(lndir).exists():
             raise
-    open(cachefile, 'w').write(files)
+    Path(cachefile).open('w').write(unicode(files))
     return local_files
 
 
@@ -28,13 +29,11 @@ def walktree(dirname, callback):
     '''recursively descend the directory tree rooted at top,
        calling the callback function for each regular file'''
 
-    for f in os.listdir(dirname):
-        pathname = os.path.join(dirname, f)
-        mode = os.stat(pathname).st_mode
-        if stat.S_ISDIR(mode):
+    for pathname in Path(dirname).iterdir():
+        if Path(pathname).is_dir():
             # It's a directory, recurse into it
             walktree(pathname, callback)
-        elif stat.S_ISREG(mode):
+        elif Path(pathname).is_file():
             # It's a file, call the callback function
             callback(pathname)
         else:
@@ -43,7 +42,8 @@ def walktree(dirname, callback):
 
 
 def statfile(file):
-    filename = os.path.basename(file)
+    #filename = os.path.basename(file)
+    filename = Path(file).parts[-1]
     if not filename.endswith('.enml') or filename.count('-') < 4:
         return
     try:
