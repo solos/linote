@@ -50,7 +50,7 @@ def statfile(file):
     except Exception, e:
         print e
         return
-    fstat = os.stat(file)
+    fstat = Path(file).stat()
     mtime = int(fstat.st_mtime)
     ctime = int(fstat.st_ctime)
     local_files[_id] = {
