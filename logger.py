@@ -5,16 +5,18 @@ import config
 import logging
 import os
 from logging.handlers import TimedRotatingFileHandler
+from pathlib import *
 
 loggerName = config.LOG_NAME
 basic_log_path = config.BASIC_LOG_PATH
 filename = config.LOG_FILENAME
-if os.path.splitext(filename)[1] == '':
+if Path(filename).suffix == '':
     logfile = '%s/%s.log' % (basic_log_path, filename)
 else:
     logfile = '%s/%s' % (basic_log_path, filename)
-if not os.path.exists(basic_log_path):
-    os.makedirs(basic_log_path)
+
+if not Path(basic_log_path).exists():
+    Path(basic_log_path).mkdir(parents=True)
 
 formatter = logging.Formatter(
     '%(asctime)s %(levelname)s %(filename)s %(message)s')

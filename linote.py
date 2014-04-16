@@ -3,9 +3,10 @@
 
 import os
 import sys
+from pathlib import *
 
-PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
-PROJECT_CONFIG = os.path.join(os.environ['HOME'], '.linote')
+PROJECT_ROOT = Path(__file__).parent.resolve()
+PROJECT_CONFIG = Path(os.environ['HOME']).joinpath('.linote')
 sys.path.append(PROJECT_ROOT)
 sys.path.append(PROJECT_CONFIG)
 
@@ -90,17 +91,17 @@ class Linote(object):
     def getNotebookDir(self, notebook):
         if notebook.stack:
             #parent_dir = notebook.stack
-            parent_dir = os.path.join(PROJECT_ROOT, notebook.stack)
+            parent_dir = Path(PROJECT_ROOT).joinpath(notebook.stack)
             #subdir = '%s/%s' % (parent_dir, notebook.name)
-            subdir = os.path.join(PROJECT_ROOT, parent_dir, notebook.name)
-            if not os.path.isdir(parent_dir):
-                os.mkdir(parent_dir)
-            if not os.path.isdir(subdir):
-                os.makedirs(subdir)
+            subdir = Path(PROJECT_ROOT).joinpath(parent_dir).joinpath(notebook.name)
+
+            for fpath in (parent_dir, subdir):
+                if not Path(fpath).exists():
+                    Path(fpath).mkdir(parents=True)
         else:
             subdir = notebook.name
-            if not os.path.isdir(subdir):
-                os.makedirs(subdir)
+            if not Path(subdir).exists():
+                Path(subdir).mkdir(parents=True)
         return subdir
 
     @check_rate_limit
@@ -118,7 +119,8 @@ class Linote(object):
     def checkdir(self, notedir=None):
         if not notedir:
             notedir = config.notedir
-        if not os.path.isdir(notedir):
+        #if not os.path.isdir(notedir):
+        if not Path(notedir).is_dir():
             try:
                 os.mkdir(notedir)
                 return True
@@ -252,8 +254,8 @@ class Linote(object):
         related = []
         for _id in files:
             fullname = files[_id]['file']
-            filename = os.path.basename(fullname).lower()[37:]
-            is_related = True
+            #filename = os.path.basename(fullname).lower()[37:]
+            filename = Path(fullname).parts[-1].lower()[37:]
             for keyword in keywords:
                 if keyword not in filename.lower():
                     is_related = False
@@ -268,7 +270,7 @@ class Linote(object):
         lndir = '%s/.linote' % os.environ['HOME']
         cachefile = '%s/.caches' % lndir
         try:
-            files = pickle.loads(open(cachefile).read())
+            files = pickle.loads(Path(cachefile).open().read())
         except Exception:
             files = local.gen_filelist()
 
@@ -277,7 +279,7 @@ class Linote(object):
             fullname = files[_id]['file']
             #filename = os.path.basename(fullname).lower()[37:]
             try:
-                content = open(fullname, 'r').read()
+                content = Path(fullname).open().read()
             except:
                 continue
             is_related = True
