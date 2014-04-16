@@ -12,7 +12,7 @@ PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 
 def gen_filelist():
-    walktree(Path(PROJECT_ROOT).join('notes'), statfile)
+    walktree(Path(PROJECT_ROOT).joinpath('notes'), statfile)
     files = pickle.dumps(local_files)
     lndir = '%s/.linote' % os.environ['HOME']
     cachefile = '%s/.caches' % lndir
