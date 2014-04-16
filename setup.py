@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #coding=utf-8
 
-from distutils.core import setup
+#from distutils.core import setup
+from setuptools import setup
 from linote import __version__
 
 setup(name='linote',
@@ -24,5 +25,6 @@ setup(name='linote',
           'Programming Language :: Python',
           'Topic :: Utilities',
       ],
+      install_requires = ['pathlib', 'configobj'],
       url='https://github.com/solos/linote')
 #packages=['distutils', 'distutils.command']
