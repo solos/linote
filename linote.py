@@ -137,7 +137,7 @@ class Linote(object):
 
     def format(self, note):
         content = ''
-        if note is None:
+        if note is not None:
             _, content = encoding.html_to_unicode('', note.content)
             content = encoding_match.sub('', content)
         return content
