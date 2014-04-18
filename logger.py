@@ -15,8 +15,7 @@ if path(filename).ext == '':
 else:
     logfile = '%s/%s' % (basic_log_path, filename)
 
-if not path(basic_log_path).exists():
-    path(basic_log_path).mkdir_p()
+path(basic_log_path).mkdir_p()
 
 formatter = logging.Formatter(
     '%(asctime)s %(levelname)s %(filename)s %(message)s')
