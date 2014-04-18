@@ -3,10 +3,10 @@
 
 import os
 import sys
-from pathlib import *
+from path import path
 
-PROJECT_ROOT = Path(__file__).parent.resolve()
-PROJECT_CONFIG = Path(os.environ['HOME']).joinpath('.linote')
+PROJECT_ROOT = path(__file__).parent.abspath()
+PROJECT_CONFIG = path(os.environ['HOME']).joinpath('.linote')
 sys.path.append(PROJECT_ROOT)
 sys.path.append(PROJECT_CONFIG)
 
@@ -91,17 +91,17 @@ class Linote(object):
     def getNotebookDir(self, notebook):
         if notebook.stack:
             #parent_dir = notebook.stack
-            parent_dir = Path(PROJECT_ROOT).joinpath(notebook.stack)
+            parent_dir = path(PROJECT_ROOT).joinpath(notebook.stack)
             #subdir = '%s/%s' % (parent_dir, notebook.name)
-            subdir = Path(PROJECT_ROOT).joinpath(parent_dir).joinpath(notebook.name)
+            subdir = path(PROJECT_ROOT).joinpath(parent_dir).joinpath(notebook.name)
 
             for fpath in (parent_dir, subdir):
-                if not Path(fpath).exists():
-                    Path(fpath).mkdir(parents=True)
+                if not path(fpath).exists():
+                    path(fpath).mkdir_p()
         else:
             subdir = notebook.name
-            if not Path(subdir).exists():
-                Path(subdir).mkdir(parents=True)
+            if not path(subdir).exists():
+                path(subdir).mkdir_p()
         return subdir
 
     @check_rate_limit
@@ -120,9 +120,9 @@ class Linote(object):
         if not notedir:
             notedir = config.notedir
         #if not os.path.isdir(notedir):
-        if not Path(notedir).is_dir():
+        if not path(notedir).isdir():
             try:
-                os.mkdir(notedir)
+                path(notedir).mkdir_p()
                 return True
             except Exception, e:
                 logger.error(e)
@@ -131,7 +131,8 @@ class Linote(object):
 
     def chdir(self, notedir):
         try:
-            os.chdir(notedir)
+            d = path(notedir)
+            d.chdir()
         except Exception, e:
             logger.error(e)
 
@@ -255,7 +256,7 @@ class Linote(object):
         for _id in files:
             fullname = files[_id]['file']
             #filename = os.path.basename(fullname).lower()[37:]
-            filename = Path(fullname).parts[-1].lower()[37:]
+            filename = path(fullname).basename().lower()[37:]
             for keyword in keywords:
                 if keyword not in filename.lower():
                     is_related = False
@@ -270,7 +271,7 @@ class Linote(object):
         lndir = '%s/.linote' % os.environ['HOME']
         cachefile = '%s/.caches' % lndir
         try:
-            files = pickle.loads(Path(cachefile).open().read())
+            files = pickle.loads(path(cachefile).open().read())
         except Exception:
             files = local.gen_filelist()
 
@@ -279,7 +280,7 @@ class Linote(object):
             fullname = files[_id]['file']
             #filename = os.path.basename(fullname).lower()[37:]
             try:
-                content = Path(fullname).open().read()
+                content = path(fullname).open().read()
             except:
                 continue
             is_related = True
