@@ -12,7 +12,9 @@ PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 
 def gen_filelist():
-    walktree(path(PROJECT_ROOT).joinpath('notes'), statfile)
+    for pathname in path(
+            path(PROJECT_ROOT).joinpath('notes')).walkfiles():
+        statfile(pathname)
     files = pickle.dumps(local_files)
     lndir = '%s/.linote' % os.environ['HOME']
     cachefile = '%s/.caches' % lndir
@@ -23,22 +25,6 @@ def gen_filelist():
             raise
     path(cachefile).open("w").write(unicode(files))
     return local_files
-
-
-def walktree(dirname, callback):
-    '''recursively descend the directory tree rooted at top,
-       calling the callback function for each regular file'''
-
-    for pathname in path(dirname).listdir():
-        if path(pathname).isdir():
-            # It's a directory, recurse into it
-            walktree(pathname, callback)
-        elif path(pathname).isfile():
-            # It's a file, call the callback function
-            callback(pathname)
-        else:
-            # Unknown file type, print a message
-            print 'Skipping %s' % pathname
 
 
 def statfile(file):
