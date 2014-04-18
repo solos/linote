@@ -25,6 +25,6 @@ setup(name='linote',
           'Programming Language :: Python',
           'Topic :: Utilities',
       ],
-      install_requires = ['pathlib', 'configobj'],
+      install_requires = ['path.py', 'configobj'],
       url='https://github.com/solos/linote')
 #packages=['distutils', 'distutils.command']
