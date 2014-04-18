@@ -96,12 +96,10 @@ class Linote(object):
             subdir = path(PROJECT_ROOT).joinpath(parent_dir).joinpath(notebook.name)
 
             for fpath in (parent_dir, subdir):
-                if not path(fpath).exists():
-                    path(fpath).mkdir_p()
+                path(fpath).mkdir_p()
         else:
             subdir = notebook.name
-            if not path(subdir).exists():
-                path(subdir).mkdir_p()
+            path(subdir).mkdir_p()
         return subdir
 
     @check_rate_limit
@@ -119,7 +117,6 @@ class Linote(object):
     def checkdir(self, notedir=None):
         if not notedir:
             notedir = config.notedir
-        #if not os.path.isdir(notedir):
         if not path(notedir).isdir():
             try:
                 path(notedir).mkdir_p()
@@ -255,7 +252,6 @@ class Linote(object):
         related = []
         for _id in files:
             fullname = files[_id]['file']
-            #filename = os.path.basename(fullname).lower()[37:]
             filename = path(fullname).basename().lower()[37:]
             for keyword in keywords:
                 if keyword not in filename.lower():
@@ -278,7 +274,6 @@ class Linote(object):
         related = []
         for _id in files:
             fullname = files[_id]['file']
-            #filename = os.path.basename(fullname).lower()[37:]
             try:
                 content = path(fullname).open().read()
             except:
