@@ -59,6 +59,7 @@ class DefaultTestCase(unittest.TestCase):
     def test_linote_checkdir(self):
         """Linote checkdir"""
         self.assertFalse(self.linote.checkdir("/xxx/yyy/zzz"))
+        self.assertFalse(path("/xxx/yyy/zzz").exists())
         existing_path = path.getcwd().joinpath('testingdir')
         self.assertTrue(self.linote.checkdir(existing_path))
         self.assertTrue(path(existing_path).exists())
