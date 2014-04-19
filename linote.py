@@ -90,9 +90,7 @@ class Linote(object):
     @check_rate_limit
     def getNotebookDir(self, notebook):
         if notebook.stack:
-            #parent_dir = notebook.stack
             parent_dir = path(PROJECT_ROOT).joinpath(notebook.stack)
-            #subdir = '%s/%s' % (parent_dir, notebook.name)
             subdir = path(PROJECT_ROOT).joinpath(
                 parent_dir).joinpath(notebook.name)
 
@@ -129,8 +127,7 @@ class Linote(object):
 
     def chdir(self, notedir):
         try:
-            d = path(notedir)
-            d.chdir()
+            path(notedir).chdir()
         except Exception, e:
             logger.error(e)
 
@@ -178,7 +175,7 @@ class Linote(object):
             filename = ('%s/%s-%s.enml' % (subdir, note.guid, title))
             note_item = self.getContent(note.guid)
             content = self.clean(self.format(note_item))
-            
+
         path(filename).open("w").write(content)
 
     def sync(self):
