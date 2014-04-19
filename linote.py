@@ -93,7 +93,8 @@ class Linote(object):
             #parent_dir = notebook.stack
             parent_dir = path(PROJECT_ROOT).joinpath(notebook.stack)
             #subdir = '%s/%s' % (parent_dir, notebook.name)
-            subdir = path(PROJECT_ROOT).joinpath(parent_dir).joinpath(notebook.name)
+            subdir = path(PROJECT_ROOT).joinpath(
+                parent_dir).joinpath(notebook.name)
 
             for fpath in (parent_dir, subdir):
                 path(fpath).mkdir_p()
@@ -173,12 +174,12 @@ class Linote(object):
             filename = ('%s/%s-%s.%s' % (subdir, note.guid, title, suffix))
             note_item = self.getContent(note.guid)
             content = self.extract(note_item)
-            open(filename, 'w').write(content)
+            path(filename).open("w").write(content)
         else:
             filename = ('%s/%s-%s.enml' % (subdir, note.guid, title))
             note_item = self.getContent(note.guid)
             content = self.clean(self.format(note_item))
-            open(filename, 'w').write(content)
+            path(filename).open("w").write(content)
 
     def sync(self):
         self.local_files = local.gen_filelist()
