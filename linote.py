@@ -174,12 +174,12 @@ class Linote(object):
             filename = ('%s/%s-%s.%s' % (subdir, note.guid, title, suffix))
             note_item = self.getContent(note.guid)
             content = self.extract(note_item)
-            path(filename).open("w").write(content)
         else:
             filename = ('%s/%s-%s.enml' % (subdir, note.guid, title))
             note_item = self.getContent(note.guid)
             content = self.clean(self.format(note_item))
-            path(filename).open("w").write(content)
+            
+        path(filename).open("w").write(content)
 
     def sync(self):
         self.local_files = local.gen_filelist()
