@@ -4,6 +4,7 @@
 import os
 import sys
 from linote import Linote
+from path import path
 from utils import clean_style, clean_note
 from encoding import (to_unicode,
                       html_to_unicode,
@@ -54,6 +55,14 @@ class DefaultTestCase(unittest.TestCase):
             html_body_declared_encoding(
                 '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">'),
             'utf-8')
+
+    def test_linote_checkdir(self):
+        """Linote checkdir"""
+        self.assertFalse(self.linote.checkdir("/xxx/yyy/zzz"))
+        existing_path = path.getcwd().joinpath('testingdir')
+        self.assertTrue(self.linote.checkdir(existing_path))
+        self.assertTrue(path(existing_path).exists())
+        path(existing_path).rmdir_p()
 
     def test_linote_clean(self):
         """Linote clean function"""
