@@ -188,8 +188,8 @@ def html_to_unicode(content_type_header, html_body_str,
     if bom_enc is not None:
         return bom_enc, to_unicode(html_body_str[len(bom):], bom_enc)
     enc = html_body_declared_encoding(html_body_str)
-    if enc is None and (auto_detect_fun is not None):
-        enc = auto_detect_fun(html_body_str)
     if enc is None:
+        if (auto_detect_fun is not None):
+            enc = auto_detect_fun(html_body_str)
         enc = default_encoding
     return enc, to_unicode(html_body_str, enc)
