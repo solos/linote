@@ -20,11 +20,7 @@ def gen_filelist():
     files = pickle.dumps(local_files)
     lndir = '%s/.linote' % os.environ['HOME']
     cachefile = '%s/.caches' % lndir
-    try:
-        path(lndir).mkdir_p()
-    except OSError:
-        if not path(lndir).exists():
-            raise
+    path(lndir).mkdir_p()
     path(cachefile).open("w").write(unicode(files))
     return local_files
 
