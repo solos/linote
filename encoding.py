@@ -172,24 +172,26 @@ def html_to_unicode(content_type_header, html_body_str,
     """
     enc = http_content_type_encoding(content_type_header)
     bom_enc, bom = read_bom(html_body_str)
-    if enc is not None:
+
+    #if enc is not None:
+    if enc:
         # remove BOM if it agrees with the encoding
-        if enc == bom_enc:
-            html_body_str = html_body_str[len(bom):]
-        elif enc == 'utf-16' or enc == 'utf-32':
+        html_body_str = html_body_str[len(bom):]
+        if enc == 'utf-16' or enc == 'utf-32':
             # read endianness from BOM, or default to big endian
             # tools.ietf.org/html/rfc2781 section 4.3
             if bom_enc is not None and bom_enc.startswith(enc):
                 enc = bom_enc
-                html_body_str = html_body_str[len(bom):]
             else:
                 enc += '-be'
         return enc, to_unicode(html_body_str, enc)
-    if bom_enc is not None:
+
+    if bom_enc:
         return bom_enc, to_unicode(html_body_str[len(bom):], bom_enc)
+
     enc = html_body_declared_encoding(html_body_str)
-    if enc is None:
-        if (auto_detect_fun is not None):
+    if not enc:
+        if auto_detect_fun:
             enc = auto_detect_fun(html_body_str)
         enc = default_encoding
     return enc, to_unicode(html_body_str, enc)
