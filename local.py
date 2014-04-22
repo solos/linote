@@ -8,7 +8,7 @@ from path import path
 
 local_files = {}
 
-PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+PROJECT_ROOT = path(__file__).dirname().abspath()
 
 
 def gen_filelist():
