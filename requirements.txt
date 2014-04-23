@@ -2,3 +2,4 @@ lxml
 evernote
 markdown
 docutils
+path.py
