@@ -13,15 +13,15 @@ PROJECT_ROOT = path(__file__).dirname().abspath()
 
 def gen_filelist():
     notes_path = path(PROJECT_ROOT).joinpath('notes')
-    if path(notes_path).exists():
-        for pathname in path(
-                path(PROJECT_ROOT).joinpath('notes')).walkfiles():
+    home_path = path('%s' % os.environ['HOME'])
+    if notes_path.exists():
+        for pathname in notes_path.walkfiles():
             statfile(pathname)
     files = pickle.dumps(local_files)
-    lndir = '%s/.linote' % os.environ['HOME']
-    cachefile = '%s/.caches' % lndir
+    lndir = home_path.joinpath('.linote')
+    cachefile = home_path.joinpath('.caches')
     path(lndir).mkdir_p()
-    path(cachefile).open("w").write(unicode(files))
+    path(cachefile).write_text(unicode(files))
     return local_files
 
 

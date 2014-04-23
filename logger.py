@@ -3,17 +3,17 @@
 
 import config
 import logging
-import os
 from logging.handlers import TimedRotatingFileHandler
 from path import path
 
 loggerName = config.LOG_NAME
 basic_log_path = config.BASIC_LOG_PATH
 filename = config.LOG_FILENAME
-if path(filename).ext == '':
-    logfile = '%s/%s.log' % (basic_log_path, filename)
-else:
-    logfile = '%s/%s' % (basic_log_path, filename)
+
+extname = path(filename).ext or 'log'
+logfile = '%s/%s.%s' % (basic_log_path,
+                        path(filename).splitext[0],
+                        extname)
 
 path(basic_log_path).mkdir_p()
 
