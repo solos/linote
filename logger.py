@@ -12,7 +12,7 @@ filename = config.LOG_FILENAME
 
 extname = path(filename).ext or 'log'
 logfile = '%s/%s.%s' % (basic_log_path,
-                        path(filename).splitext[0],
+                        path(filename).splitext()[0],
                         extname)
 
 path(basic_log_path).mkdir_p()
