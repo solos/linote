@@ -6,12 +6,9 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 from path import path
 
-#loggerName = config.LOG_NAME
 loggerName = config.linote_config.get('logging.log_name')
-#basic_log_path = config.BASIC_LOG_PATH
 basic_log_path = config.linote_config.get('logging.basic_log_path')
 filename = config.linote_config.get('logging.log_filename')
-#filename = config.LOG_FILENAME
 
 extname = path(filename).ext or 'log'
 logfile = '%s/%s.%s' % (basic_log_path,
