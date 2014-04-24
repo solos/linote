@@ -25,6 +25,6 @@ setup(name='linote',
           'Programming Language :: Python',
           'Topic :: Utilities',
       ],
-      install_requires = ['path.py', 'configobj'],
+      install_requires = ['path.py', 'kaptan'],
       url='https://github.com/solos/linote')
 #packages=['distutils', 'distutils.command']
