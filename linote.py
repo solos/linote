@@ -115,7 +115,7 @@ class Linote(object):
 
     def checkdir(self, notedir=None):
         if not notedir:
-            notedir = config.notedir
+            notedir = config.linote_config.get('linote.notedir')
         if not path(notedir).isdir():
             try:
                 path(notedir).mkdir_p()
@@ -186,7 +186,7 @@ class Linote(object):
         if not self.checkdir():
             logger.error('notedir not exist and failed to mkdir')
             return
-        self.chdir(config.notedir)
+        self.chdir(config.linote_config.get('linote.notedir'))
         for notebook in notebooks:
             subdir = self.getNotebookDir(notebook)
             notes = self.getNotes(notebook)
@@ -287,7 +287,8 @@ class Linote(object):
         return related
 
 if __name__ == '__main__':
-    ln = Linote(config.dev_token, config.noteStoreUrl)
+    ln = Linote(config.linote_config.get('linote.dev_token'),
+                config.linote_config.get('linote.notestoreurl'))
     ln.sync()
     related = ln.search_filename('pylons authkit')
     related = ln.search_content('pylons authkit')
