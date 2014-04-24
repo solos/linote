@@ -4,8 +4,13 @@
 
 A command line evernote for linux (Under development).
 
-##Getting Started (Hard Way)
+##Getting Started (Easy Way)
 
+1. Get it from pypi `pip install linote`. This will get you the latest stable version
+
+##Getting Started (Hard Way - AKA to get latest and greatest version)
+
+0. `git clone https://github.com/solos/linote.git && cd linote`
 1. Run `python install -r requirements.txt`
 2. Upon success run `python setup.py install` in source folder
 3. Run `python linote.py` to start syncing. If your `~/.linote/config.ini` does not exist it will be copied from config.ini.sample.
