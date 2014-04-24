@@ -1,11 +1,17 @@
 # linote
 
-#about
+#About
 
-A command line evernote for linux (not finished yet).
+A command line evernote for linux (Under development).
 
+##Getting Started (Hard Way)
 
-## Config developer and noteStore url
+1. Run `python install -r requirements.txt`
+2. Upon success run `python setup.py install` in source folder
+3. Run `python linote.py` to start syncing. If your `~/.linote/config.ini` does not exist it will be copied from config.ini.sample.
+4. Edit the defaults in `~/.linote/config.ini` to show correct parameters. 
+
+## About config developer and noteStore url
 
   - If you use evernote, please visit https://www.evernote.com/api/DeveloperToken.action to generate a developer token and noteStore url.
   - If you use yinxiang, please visit https://app.yinxiang.com/api/DeveloperToken.action instead.
