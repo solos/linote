@@ -1,9 +1,9 @@
-import kaptan
-import sys
 from path import path
-from util import get_config
+from utils import get_config
 
-if not path('config.ini').exists():
-    path('config.ini.sample').copy('~/.linote/config.ini')
+dst = path('~/.linote/config.ini').expanduser()
+
+if not dst.exists():
+    path('config.ini.sample').copy(dst)
 
 linote_config = get_config(path('~/.linote/config.ini').expanduser())
