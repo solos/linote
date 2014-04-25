@@ -5,9 +5,15 @@ import re
 import markdown
 import lxml.html
 import lxml.html.clean
+import kaptan
 from docutils.core import publish_parts
 
 encoding_match = re.compile('encoding=[^>]+')
+
+
+def get_config(conf_object, handler='ini'):
+    config = kaptan.Kaptan(handler=handler)
+    return config.import_config(conf_object)
 
 cleaner = lxml.html.clean.Cleaner(
     scripts=True,
