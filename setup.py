@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 #coding=utf-8
 
-#from distutils.core import setup
 from setuptools import setup
 from linote import __version__
 
@@ -27,4 +26,3 @@ setup(name='linote',
       ],
       install_requires = ['path.py', 'kaptan'],
       url='https://github.com/solos/linote')
-#packages=['distutils', 'distutils.command']
