@@ -27,7 +27,7 @@ class DefaultTestCase(unittest.TestCase):
 
     def test_version(self):
         """Linote ensure linote gives back correct version"""
-        self.assertIsNotNone(linote.__version__, '0.0.1')
+        assert linote.__version__ == '0.0.1'
 
     def test_utils_clean_style(self):
         """Linote for utils clean_style"""
