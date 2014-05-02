@@ -39,8 +39,8 @@ class DefaultTestCase(unittest.TestCase):
 
     def test_to_unicode(self):
         """Linote to_unicode function"""
-        assert is_instance("abc", unicode) == False
-        assert is_instance(to_unicode("abc", "utf-8"), unicode) == True
+        assert isinstance("abc", unicode) == False
+        assert isinstance(to_unicode("abc", "utf-8"), unicode) == True
 
     def test_html_to_unicode(self):
         """Linote html_to_unicode function"""
