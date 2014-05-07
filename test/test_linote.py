@@ -10,6 +10,7 @@ from encoding import (to_unicode,
                       html_to_unicode,
                       html_body_declared_encoding)
 from evernote.edam.type.ttypes import Note
+from utils import get_config
 
 cur_dir = path(__file__).abspath().split('/')[:-2]
 par_dir = '/'.join(cur_dir)
@@ -40,8 +41,8 @@ class DefaultTestCase(unittest.TestCase):
 
     def test_to_unicode(self):
         """Linote to_unicode function"""
-        assert isinstance("abc", unicode) == False
-        assert isinstance(to_unicode("abc", "utf-8"), unicode) == True
+        assert isinstance("abc", unicode) is False
+        assert isinstance(to_unicode("abc", "utf-8"), unicode) is True
 
     def test_html_to_unicode(self):
         """Linote html_to_unicode function"""
@@ -77,19 +78,31 @@ class DefaultTestCase(unittest.TestCase):
         """Linote clean_note function"""
         self.assertEqual(self.linote.clean_note("<h1>hello</h1><br>"),
                          'hello')
-    
+
     def test_linote_clean_style(self):
         """Linote clean_style function"""
-        self.assertEqual(self.linote.clean_style("<h1 type='text/css'>hello</h1>"),
-                         '<h1>hello</h1>')
+        self.assertEqual(self.linote.clean_style(
+            "<h1 type='text/css'>hello</h1>"), '<h1>hello</h1>')
 
     def test_linote_make_note(self):
         """Linote make_note function"""
-        note = self.linote.make_note('a','abc')
+        note = self.linote.make_note('a', 'abc')
         assert isinstance(note, Note)
         self.assertEqual(note.title, 'a')
         self.assertEqual(note.content,
                          '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd"><en-note> abc </en-note>')
+
+    def test_linote_config_object(self):
+        """Linote linote object works"""
+        import kaptan
+        linote_config = get_config("config.ini.sample")
+        assert isinstance(linote_config, kaptan.Kaptan)
+        self.assertEqual(linote_config.get("linote.dev_token"),
+                         "fill_in_your_dev_token_here")
+        self.assertEqual(linote_config.get("linote.notedir"),
+                         "notes")
+        self.assertEqual(linote_config.get("logging.log_name"),
+                         "linote")
 
 
 def suite():
