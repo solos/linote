@@ -9,6 +9,7 @@ from utils import clean_style, clean_note
 from encoding import (to_unicode,
                       html_to_unicode,
                       html_body_declared_encoding)
+from evernote.edam.type.ttypes import Note
 
 cur_dir = path(__file__).abspath().split('/')[:-2]
 par_dir = '/'.join(cur_dir)
@@ -81,6 +82,14 @@ class DefaultTestCase(unittest.TestCase):
         """Linote clean_style function"""
         self.assertEqual(self.linote.clean_style("<h1 type='text/css'>hello</h1>"),
                          '<h1>hello</h1>')
+
+    def test_linote_make_note(self):
+        """Linote make_note function"""
+        note = self.linote.make_note('a','abc')
+        assert isinstance(note, Note)
+        self.assertEqual(note.title, 'a')
+        self.assertEqual(note.content,
+                         '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd"><en-note> abc </en-note>')
 
 
 def suite():
