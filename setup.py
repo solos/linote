@@ -6,14 +6,13 @@ from linote import __version__
 
 setup(name='linote',
       version=__version__,
-      description='A command line evernote for linux.',
+      description='A command line evernote utility for Linux.',
       long_description=open('README.md').read(),
       author='solos',
       author_email='solos@solos.so',
       py_modules=['linote'],
       scripts=['linote.py', 'local.py', 'encoding.py', 'logger.py'],
       license='MIT',
-      platforms=['any'],
       classifiers=[
           'Development Status :: 1 - Alpha',
           'Intended Audience :: End Users/Desktop',
