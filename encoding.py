@@ -18,15 +18,20 @@ def http_content_type_encoding(content_type):
 # regexp for parsing HTTP meta tags
 _TEMPLATE = r'''%s\s*=\s*["']?\s*%s\s*["']?'''
 _HTTPEQUIV_RE = _TEMPLATE % ('http-equiv', 'Content-Type')
-_CONTENT_RE = _TEMPLATE % ('content', r'(?P<mime>[^;]+);\s*charset=(?P<charset>[\w-]+)')
+_CONTENT_RE = _TEMPLATE % ('content',
+                           r'(?P<mime>[^;]+);\s*charset=(?P<charset>[\w-]+)')
 _CONTENT2_RE = _TEMPLATE % ('charset', r'(?P<charset2>[\w-]+)')
-_XML_ENCODING_RE = _TEMPLATE % ('encoding', r'(?P<xmlcharset>[\w-]+)')
+_XML_ENCODING_RE = _TEMPLATE % ('encoding',
+                                r'(?P<xmlcharset>[\w-]+)')
 
-# check for meta tags, or xml decl. and stop search if a body tag is encountered
+# check for meta tags, or xml decl. and stop search
+# if a body tag is encountered
 _BODY_ENCODING_PATTERN = r'<\s*(?:meta(?:(?:\s+%s|\s+%s){2}|\s+%s)|\?xml\s[^>]+%s|body)' % \
-                         (_HTTPEQUIV_RE, _CONTENT_RE, _CONTENT2_RE, _XML_ENCODING_RE)
+                         (_HTTPEQUIV_RE, _CONTENT_RE,
+                          _CONTENT2_RE, _XML_ENCODING_RE)
 _BODY_ENCODING_STR_RE = re.compile(_BODY_ENCODING_PATTERN, re.I)
-_BODY_ENCODING_BYTES_RE = re.compile(_BODY_ENCODING_PATTERN.encode('ascii'), re.I)
+_BODY_ENCODING_BYTES_RE = re.compile(_BODY_ENCODING_PATTERN.encode('ascii'),
+                                     re.I)
 
 
 def html_body_declared_encoding(html_body_str):
@@ -48,7 +53,7 @@ def html_body_declared_encoding(html_body_str):
 
 # Default encoding translation
 # this maps cannonicalized encodings to target encodings
-# see http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#character-encodings-0
+# see http://bit.ly/1lByWl3
 # in addition, gb18030 supercedes gb2312 & gbk
 # the keys are converted using _c18n_encoding and in sorted order
 DEFAULT_ENCODING_TRANSLATION = {
@@ -173,7 +178,7 @@ def html_to_unicode(content_type_header, html_body_str,
     enc = http_content_type_encoding(content_type_header)
     bom_enc, bom = read_bom(html_body_str)
 
-    #if enc is not None:
+    # if enc is not None:
     if enc:
         # remove BOM if it agrees with the encoding
         html_body_str = html_body_str[len(bom):]

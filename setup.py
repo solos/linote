@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#coding=utf-8
+# coding=utf-8
 
 from setuptools import setup
 from linote import __version__
@@ -23,5 +23,5 @@ setup(name='linote',
           'Programming Language :: Python',
           'Topic :: Utilities',
       ],
-      install_requires = ['path.py', 'kaptan'],
+      install_requires=['path.py', 'kaptan'],
       url='https://github.com/solos/linote')

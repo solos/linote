@@ -286,13 +286,11 @@ class Linote(object):
                 related.append((_id, fullname))
         return related
 
-if __name__ == '__main__':
+
+def run():
     ln = Linote(config.linote_config.get('linote.dev_token'),
                 config.linote_config.get('linote.notestoreurl'))
     ln.sync()
-    related = ln.search_filename('pylons authkit')
-    related = ln.search_content('pylons authkit')
-    note_title = 'test'
-    note_content = 'content test'
-    note = ln.make_note(note_title, note_content)
-    ln.create(note)
+
+if __name__ == '__main__':
+    run()
