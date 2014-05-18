@@ -1,3 +1,4 @@
+[![Downloads](https://pypip.in/d/linote/badge.png)](https://pypi.python.org/pypi/linote)
 # linote
 
 #About
