@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/solos/linote.png?branch=master)](https://travis-ci.org/solos/linote)
 [![Downloads](https://pypip.in/d/linote/badge.png)](https://pypi.python.org/pypi/linote)
+[![Version](https://img.shields.io/pypi/v/linote.svg)](https://img.shields.io/pypi/v/linote.svg)
 # linote
 
 #About
