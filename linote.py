@@ -83,6 +83,9 @@ class Linote(object):
             _tag_link_attrs={'a': 'href', 'applet': ['code', 'object']}
         )
 
+        lndir = '%s/.linote' % os.environ['HOME']
+        self.cachefile = '%s/.caches' % lndir
+
     @check_rate_limit
     def getNotebooks(self):
         return self.noteStore.listNotebooks(self.dev_token)
@@ -240,10 +243,9 @@ class Linote(object):
 
     def search_filename(self, keywords):
         keywords = keywords.strip().lower().split(' ')
-        lndir = '%s/.linote' % os.environ['HOME']
-        cachefile = '%s/.caches' % lndir
         try:
-            files = pickle.loads(open(cachefile).read())
+            files = pickle.loads(
+                open(self.cachefile).read())
         except Exception:
             files = local.gen_filelist()
 
@@ -262,10 +264,9 @@ class Linote(object):
 
     def search_content(self, keywords):
         keywords = keywords.strip().lower().split(' ')
-        lndir = '%s/.linote' % os.environ['HOME']
-        cachefile = '%s/.caches' % lndir
         try:
-            files = pickle.loads(path(cachefile).open().read())
+            files = pickle.loads(
+                path(self.cachefile).open().read())
         except Exception:
             files = local.gen_filelist()
 
