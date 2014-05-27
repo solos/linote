@@ -92,6 +92,10 @@ class Linote(object):
 
     @check_rate_limit
     def getNotebookDir(self, notebook):
+        if not isinstance(notebook.stack, unicode):
+            notebook.stack = notebook.stack.decode('utf8')
+        if not isinstance(notebook.name, unicode):
+            notebook.name = notebook.name.decode('utf8')
         if notebook.stack:
             parent_dir = path(PROJECT_ROOT).joinpath(notebook.stack)
             subdir = path(PROJECT_ROOT).joinpath(
@@ -179,6 +183,8 @@ class Linote(object):
             note_item = self.getContent(note.guid)
             content = self.clean(self.format(note_item))
 
+        if not isinstance(filename, unicode):
+            filename = filename.decode('utf8')
         path(filename).open("w").write(content)
 
     def sync(self):
