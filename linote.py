@@ -84,6 +84,7 @@ class Linote(object):
         )
 
         lndir = '%s/.linote' % os.environ['HOME']
+        self.notedir = config.linote_config.get('linote.notedir')
         self.cachefile = '%s/.caches' % lndir
 
     @check_rate_limit
@@ -97,7 +98,7 @@ class Linote(object):
         if not isinstance(notebook.name, unicode):
             notebook.name = notebook.name.decode('utf8')
         if notebook.stack:
-            parent_dir = path(PROJECT_ROOT).joinpath(notebook.stack)
+            parent_dir = path(self.notedir).joinpath(notebook.stack)
             subdir = path(PROJECT_ROOT).joinpath(
                 parent_dir).joinpath(notebook.name)
 
@@ -121,8 +122,7 @@ class Linote(object):
                                       noteId, True, False, False, False)
 
     def checkdir(self, notedir=None):
-        if not notedir:
-            notedir = config.linote_config.get('linote.notedir')
+        notedir = notedir or self.notedir
         if not path(notedir).isdir():
             try:
                 path(notedir).mkdir_p()
@@ -179,7 +179,10 @@ class Linote(object):
             note_item = self.getContent(note.guid)
             content = self.extract(note_item)
         else:
-            filename = ('%s/%s-%s.enml' % (subdir, note.guid, title))
+            filename = ('%s/%s-%s.enml' %
+                        (subdir.encode('utf8'),
+                         note.guid,
+                         title))
             note_item = self.getContent(note.guid)
             content = self.clean(self.format(note_item))
 
