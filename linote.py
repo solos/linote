@@ -1,6 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Linote.
+
+Usage:
+  linote.py sync
+  linote.py --version
+
+Options:
+  -h --help     Show this screen.
+  --version     Show version.
+
+"""
+
 import os
 import sys
 from path import path
@@ -10,7 +22,9 @@ PROJECT_CONFIG = path(os.environ['HOME']).joinpath('.linote')
 sys.path.append(PROJECT_ROOT)
 sys.path.append(PROJECT_CONFIG)
 
+
 import re
+import time
 import local
 import config
 import encoding
@@ -18,6 +32,7 @@ import cPickle as pickle
 import markdown
 import lxml.html
 import lxml.html.clean
+from docopt import docopt
 from logger import logger
 from docutils.core import publish_parts
 import evernote.edam.error.ttypes as Errors
@@ -40,7 +55,8 @@ def check_rate_limit(func):
             if e.errorCode == Errors.EDAMErrorCode.RATE_LIMIT_REACHED:
                 logger.info("Rate limit reached, Retry your request in %d "
                             "seconds" % e.rateLimitDuration)
-            return None
+            logger.info('sleep %s' % e.rateLimitDuration)
+            time.sleep(int(e.rateLimitDuration) + 10)
         except Exception, e:
             logger.error(e)
     return wrapper
@@ -159,17 +175,20 @@ class Linote(object):
         content = self.clean_note(content)
         return content.encode('utf8')
 
-    @check_rate_limit
-    def process(self, note, subdir):
-        _id = note.guid
+    def need_to_sync(self, note):
         _updated = note.updated / 1000
         try:
-            local_updated = self.local_files[_id]['mtime']
+            local_updated = self.local_files[note.guid]['mtime']
         except KeyError:
             local_updated = 0
         if _updated <= local_updated:
-            return
-        logger.info('sync %s %s' % (_id, note.title))
+            return False
+        else:
+            return True
+
+    @check_rate_limit
+    def process(self, note, subdir):
+        logger.info('sync %s %s' % (note.guid, note.title))
         ntitle = note.title.replace('/', '-')
         title = ntitle if len(ntitle) < 200 else ntitle[:200]
 
@@ -191,7 +210,7 @@ class Linote(object):
         path(filename).open("w").write(content)
 
     def sync(self):
-        self.local_files = local.gen_filelist()
+        self.local_files = local.gen_filelist(self.notedir)
         notebooks = self.getNotebooks()
         if not notebooks:
             return
@@ -205,7 +224,8 @@ class Linote(object):
             if not notes:
                 return
             for note in notes:
-                self.process(note, subdir)
+                if self.need_to_sync(note):
+                    self.process(note, subdir)
 
     def make_mdnote(self, md_source):
         source_segment = '''<div style="display:none">%s</div>''' % md_source
@@ -256,7 +276,7 @@ class Linote(object):
             files = pickle.loads(
                 open(self.cachefile).read())
         except Exception:
-            files = local.gen_filelist()
+            files = local.gen_filelist(self.notedir)
 
         related = []
         for _id in files:
@@ -300,7 +320,10 @@ class Linote(object):
 def run():
     ln = Linote(config.linote_config.get('linote.dev_token'),
                 config.linote_config.get('linote.notestoreurl'))
-    ln.sync()
+    arguments = docopt(__doc__, version=__version__)
+    if arguments['sync']:
+        ln.sync()
+
 
 if __name__ == '__main__':
     run()

@@ -4,3 +4,4 @@ markdown
 docutils
 path.py
 kaptan
+docopt
