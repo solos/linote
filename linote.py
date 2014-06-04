@@ -38,6 +38,7 @@ from docutils.core import publish_parts
 import evernote.edam.error.ttypes as Errors
 import evernote.edam.notestore.NoteStore as NoteStore
 import evernote.edam.type.ttypes as Types
+from evernote.edam.notestore import ttypes as ttypes
 import thrift.transport.THttpClient as THttpClient
 from thrift.protocol.TBinaryProtocol import TBinaryProtocol
 
@@ -175,6 +176,11 @@ class Linote(object):
         content = self.clean_note(content)
         return content.encode('utf8')
 
+    def getFilteredSyncChunk(self, afterUSN, maxEntries=256):
+        filter = ttypes.SyncChunkFilter(includeNotes=True)
+        return self.noteStore.getFilteredSyncChunk(
+            self.dev_token, afterUSN, maxEntries, filter)
+
     def need_to_sync(self, note):
         _updated = note.updated / 1000
         try:
@@ -188,6 +194,7 @@ class Linote(object):
 
     @check_rate_limit
     def process(self, note, subdir):
+        print 'updateSequenceNum', note.updateSequenceNum
         logger.info('sync %s %s' % (note.guid, note.title))
         ntitle = note.title.replace('/', '-')
         title = ntitle if len(ntitle) < 200 else ntitle[:200]
