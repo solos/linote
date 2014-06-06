@@ -6,4 +6,4 @@ install:
   - pip install -r requirements.txt
   - python setup.py install
 script:
-  - nosetests test/test_linote.py -sv
+  - python setup.py test

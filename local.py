@@ -13,7 +13,7 @@ PROJECT_ROOT = path(__file__).dirname().abspath()
 
 def gen_filelist():
     notes_path = path(PROJECT_ROOT).joinpath('notes')
-    home_path = path('%s' % os.environ['HOME'])
+    home_path = path(os.environ['HOME'])
     if notes_path.exists():
         for pathname in notes_path.walkfiles():
             statfile(pathname)
