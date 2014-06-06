@@ -1,6 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Linote.
+
+Usage:
+  linote.py sync
+  linote.py --version
+
+Options:
+  -h --help     Show this screen.
+  --version     Show version.
+
+"""
+
 import os
 import sys
 from path import path
@@ -10,7 +22,9 @@ PROJECT_CONFIG = path(os.environ['HOME']).joinpath('.linote')
 sys.path.append(PROJECT_ROOT)
 sys.path.append(PROJECT_CONFIG)
 
+
 import re
+import time
 import local
 import config
 import encoding
@@ -18,11 +32,13 @@ import cPickle as pickle
 import markdown
 import lxml.html
 import lxml.html.clean
+from docopt import docopt
 from logger import logger
 from docutils.core import publish_parts
 import evernote.edam.error.ttypes as Errors
 import evernote.edam.notestore.NoteStore as NoteStore
 import evernote.edam.type.ttypes as Types
+from evernote.edam.notestore import ttypes as ttypes
 import thrift.transport.THttpClient as THttpClient
 from thrift.protocol.TBinaryProtocol import TBinaryProtocol
 
@@ -40,7 +56,8 @@ def check_rate_limit(func):
             if e.errorCode == Errors.EDAMErrorCode.RATE_LIMIT_REACHED:
                 logger.info("Rate limit reached, Retry your request in %d "
                             "seconds" % e.rateLimitDuration)
-            return None
+            logger.info('sleep %s' % e.rateLimitDuration)
+            time.sleep(int(e.rateLimitDuration) + 10)
         except Exception, e:
             logger.error(e)
     return wrapper
@@ -84,6 +101,7 @@ class Linote(object):
         )
 
         lndir = '%s/.linote' % os.environ['HOME']
+        self.notedir = config.linote_config.get('linote.notedir')
         self.cachefile = '%s/.caches' % lndir
 
     @check_rate_limit
@@ -92,8 +110,12 @@ class Linote(object):
 
     @check_rate_limit
     def getNotebookDir(self, notebook):
+        if not isinstance(notebook.stack, unicode):
+            notebook.stack = notebook.stack.decode('utf8')
+        if not isinstance(notebook.name, unicode):
+            notebook.name = notebook.name.decode('utf8')
         if notebook.stack:
-            parent_dir = path(PROJECT_ROOT).joinpath(notebook.stack)
+            parent_dir = path(self.notedir).joinpath(notebook.stack)
             subdir = path(PROJECT_ROOT).joinpath(
                 parent_dir).joinpath(notebook.name)
 
@@ -117,8 +139,7 @@ class Linote(object):
                                       noteId, True, False, False, False)
 
     def checkdir(self, notedir=None):
-        if not notedir:
-            notedir = config.linote_config.get('linote.notedir')
+        notedir = notedir or self.notedir
         if not path(notedir).isdir():
             try:
                 path(notedir).mkdir_p()
@@ -155,17 +176,26 @@ class Linote(object):
         content = self.clean_note(content)
         return content.encode('utf8')
 
-    @check_rate_limit
-    def process(self, note, subdir):
-        _id = note.guid
+    def getFilteredSyncChunk(self, afterUSN, maxEntries=256):
+        filter = ttypes.SyncChunkFilter(includeNotes=True)
+        return self.noteStore.getFilteredSyncChunk(
+            self.dev_token, afterUSN, maxEntries, filter)
+
+    def need_to_sync(self, note):
         _updated = note.updated / 1000
         try:
-            local_updated = self.local_files[_id]['mtime']
+            local_updated = self.local_files[note.guid]['mtime']
         except KeyError:
             local_updated = 0
         if _updated <= local_updated:
-            return
-        logger.info('sync %s %s' % (_id, note.title))
+            return False
+        else:
+            return True
+
+    @check_rate_limit
+    def process(self, note, subdir):
+        print 'updateSequenceNum', note.updateSequenceNum
+        logger.info('sync %s %s' % (note.guid, note.title))
         ntitle = note.title.replace('/', '-')
         title = ntitle if len(ntitle) < 200 else ntitle[:200]
 
@@ -175,14 +205,19 @@ class Linote(object):
             note_item = self.getContent(note.guid)
             content = self.extract(note_item)
         else:
-            filename = ('%s/%s-%s.enml' % (subdir, note.guid, title))
+            filename = ('%s/%s-%s.enml' %
+                        (subdir.encode('utf8'),
+                         note.guid,
+                         title))
             note_item = self.getContent(note.guid)
             content = self.clean(self.format(note_item))
 
+        if not isinstance(filename, unicode):
+            filename = filename.decode('utf8')
         path(filename).open("w").write(content)
 
     def sync(self):
-        self.local_files = local.gen_filelist()
+        self.local_files = local.gen_filelist(self.notedir)
         notebooks = self.getNotebooks()
         if not notebooks:
             return
@@ -196,7 +231,8 @@ class Linote(object):
             if not notes:
                 return
             for note in notes:
-                self.process(note, subdir)
+                if self.need_to_sync(note):
+                    self.process(note, subdir)
 
     def make_mdnote(self, md_source):
         source_segment = '''<div style="display:none">%s</div>''' % md_source
@@ -247,7 +283,7 @@ class Linote(object):
             files = pickle.loads(
                 open(self.cachefile).read())
         except Exception:
-            files = local.gen_filelist()
+            files = local.gen_filelist(self.notedir)
 
         related = []
         for _id in files:
@@ -291,7 +327,10 @@ class Linote(object):
 def run():
     ln = Linote(config.linote_config.get('linote.dev_token'),
                 config.linote_config.get('linote.notestoreurl'))
-    ln.sync()
+    arguments = docopt(__doc__, version=__version__)
+    if arguments['sync']:
+        ln.sync()
+
 
 if __name__ == '__main__':
     run()

@@ -1,0 +1,9 @@
+[linote]
+dev_token = fill_in_your_dev_token_here
+notedir = notes
+noteStoreUrl = https://www.evernote.com/your/url/here
+
+[logging]
+LOG_NAME = linote
+BASIC_LOG_PATH = ./log/
+LOG_FILENAME = linote

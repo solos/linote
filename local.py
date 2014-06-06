@@ -2,26 +2,24 @@
 # -*- coding: utf-8 -*-
 
 import os
-import stat
 import cPickle as pickle
 from path import path
 
 local_files = {}
 
-PROJECT_ROOT = path(__file__).dirname().abspath()
 
 
-def gen_filelist():
-    notes_path = path(PROJECT_ROOT).joinpath('notes')
-    home_path = path(os.environ['HOME'])
+def gen_filelist(notedir):
+    notes_path = path(notedir)
+    home_path = path('%s' % os.environ['HOME'])
     if notes_path.exists():
         for pathname in notes_path.walkfiles():
             statfile(pathname)
     files = pickle.dumps(local_files)
     lndir = home_path.joinpath('.linote')
-    cachefile = home_path.joinpath('.caches')
+    cachefile = home_path.joinpath('.caches').encode('utf8')
     path(lndir).mkdir_p()
-    path(cachefile).write_text(unicode(files))
+    path(cachefile).write_text(files)
     return local_files
 
 
@@ -44,6 +42,8 @@ def statfile(file):
     }
 
 if __name__ == '__main__':
-    filelist = gen_filelist()
+    import config
+    notedir = config.linote_config.get('linote.notedir')
+    filelist = gen_filelist(notedir)
     for i in filelist:
         print filelist[i]['file']
