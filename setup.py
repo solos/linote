@@ -23,7 +23,7 @@ setup(name='linote',
           'Programming Language :: Python',
           'Topic :: Utilities',
       ],
-      install_requires=['path.py', 'kaptan'],
+      install_requires=['markdown==2.0', 'path.py', 'kaptan'],
       tests_require=['pyshould==0.5.7'],
       test_suite="nose.collector",
       url='https://github.com/solos/linote')
