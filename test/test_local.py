@@ -21,8 +21,6 @@ class LocalFunctionTests(unittest.TestCase):
 
     @patch("local.path.stat")
     def test_statfile(self, mock_file):
-        mock_file.st_mtime.side_effect = 100
-        mock_file.st_ctime.side_effect = 100
         local.local_files = {}
         local.statfile("setup-setup-setup-setup-setup.enml")
         self.assertEqual(local.local_files,
